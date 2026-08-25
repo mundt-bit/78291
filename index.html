@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú Principal - Depósito Gilera</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    header { background-color: #0f172a; color: #fff; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 1rem; }
+    header h1 { font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    
+    /* Botón Modo Oscuro */
+    .btn-oscuro { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease; }
+    .btn-oscuro:hover { background-color: #38bdf8; color: #0f172a; }
+
+    main { flex: 1; max-width: 1000px; width: 100%; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; }
+    
+    .welcome-box { text-align: center; margin-bottom: 2rem; }
+    .welcome-box h2 { color: #0f172a; font-size: 2rem; margin-bottom: 0.5rem; }
+    .welcome-box p { color: #64748b; font-size: 1.1rem; }
+
+    /* Dashboard de Estadísticas */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .stat-card { background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-align: center; border-left: 5px solid #0f172a; transition: background-color 0.3s ease; }
+    .stat-card.blue { border-left-color: #38bdf8; }
+    .stat-card.green { border-left-color: #10b981; }
+    .stat-card.purple { border-left-color: #8b5cf6; }
+    .stat-number { font-size: 2.5rem; font-weight: bold; color: #0f172a; margin-bottom: 0.2rem; }
+    .stat-label { color: #64748b; font-size: 0.95rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Cuadrícula de Accesos Directos */
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    
+    .menu-card { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease; border-top: 4px solid #38bdf8; }
+    .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .menu-card.green { border-top-color: #10b981; }
+    .menu-card.purple { border-top-color: #8b5cf6; }
+
+    .menu-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .menu-card h3 { font-size: 1.3rem; color: #0f172a; margin-bottom: 0.5rem; }
+    .menu-card p { color: #64748b; font-size: 0.95rem; line-height: 1.4; }
+
+    footer { text-align: center; padding: 1.5rem; color: #94a3b8; font-size: 0.85rem; border-top: 1px solid #e2e8f0; background: #fff; margin-top: auto; transition: background-color 0.3s ease; }
+
+    /* =========================================
+       REGLAS DEL MODO OSCURO PARA EL INDEX
+       ========================================= */
+    body.dark-mode { background-color: #0f172a; color: #f8fafc; }
+    body.dark-mode .welcome-box h2, 
+    body.dark-mode .stat-number, 
+    body.dark-mode .menu-card h3 { color: #f8fafc; }
+    body.dark-mode .welcome-box p, 
+    body.dark-mode .stat-label, 
+    body.dark-mode .menu-card p { color: #94a3b8; }
+    body.dark-mode .stat-card, 
+    body.dark-mode .menu-card, 
+    body.dark-mode footer { background-color: #1e293b; box-shadow: none; border-color: #334155; }
+    body.dark-mode .menu-card.green { border-top-color: #10b981; }
+    body.dark-mode .menu-card.purple { border-top-color: #8b5cf6; }
+    body.dark-mode .menu-card { border-top-color: #38bdf8; }
+    body.dark-mode .stat-card { border-left-color: #38bdf8; }
+    body.dark-mode .stat-card.green { border-left-color: #10b981; }
+    body.dark-mode .stat-card.purple { border-left-color: #8b5cf6; }
+
+    /* Ajustes para Celulares */
+    @media (max-width: 768px) {
+      header { flex-direction: column; text-align: center; gap: 1rem;}
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    // // esto es para que lea el modo oscuro antes de ejecutar el codigo, antes daba un errror tipo destello cuando cambiabas entre paginas
+    if (localStorage.getItem('modo_oscuro') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+  </script>
+
+  <header>
+    <h1 style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;">
+      <!-- Contenedor fantasma flexible -->
+      <div style="width: 80px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <img src="logo.png" alt="Logo Gilera" style="max-height: 100%; max-width: 100%; object-fit: contain;"> 
+      </div>
+      Depósito Gilera
+    </h1>
+    <button onclick="toggleModoOscuro()" id="btn-modo-oscuro" class="btn-oscuro">🌙 Oscuro</button>
+  </header>
+
+  <main>
+    <div class="welcome-box">
+      <h2>Panel de Control</h2>
+      <p>Resumen en tiempo real del estado de la planta</p>
+    </div>
+
+    <!-- TARJETAS DE ESTADÍSTICAS -->
+    <div class="dashboard-grid">
+      <div class="stat-card blue">
+        <div class="stat-number" id="stat-motos">0</div>
+        <div class="stat-label">Total IKD en Stock</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-number" id="stat-vacios">0</div>
+        <div class="stat-label">Contenedores Vacíos</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-number" id="stat-movimientos">0</div>
+        <div class="stat-label">Salidas Históricas</div>
+      </div>
+    </div>
+
+    <!-- BOTONES DE NAVEGACIÓN -->
+    <div class="menu-grid">
+      <a href="stock.html" class="menu-card">
+        <div class="menu-icon">📋</div>
+        <h3>Ver Inventario / Stock</h3>
+        <p>Consultar contenedores, editar registros, filtrar por modelo y realizar egresos de unidades.</p>
+      </a>
+
+      <a href="agregar.html" class="menu-card green">
+        <div class="menu-icon">➕</div>
+        <h3>Registrar Ingreso</h3>
+        <p>Dar de alta nuevos contenedores con IKD o ingresar contenedores vacíos al depósito.</p>
+      </a>
+
+      <a href="historial.html" class="menu-card purple">
+        <div class="menu-icon">📊</div>
+        <h3>Historial de Salidas</h3>
+        <p>Revisar el registro detallado de envíos a producción o sucursales con buscador integrado.</p>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    Sistema Interno de Fábrica — Depósito Gilera
+  </footer>
+
+  <!-- SCRIPT PARA CALCULAR LAS ESTADÍSTICAS -->
+  <script>
+    function cargarEstadisticas() {
+      // 1. Traemos los datos de la memoria
+      const inventario = JSON.parse(localStorage.getItem('deposito_gilera_data')) || [];
+      const movimientos = JSON.parse(localStorage.getItem('deposito_gilera_movimientos')) || [];
+
+      let totalMotos = 0;
+      let contenedoresVacios = 0;
+
+      // 2. Recorremos el inventario para sumar y contar
+      inventario.forEach(prod => {
+        let cant = parseInt(prod.cantidad_ikd) || 0;
+        
+        // Sumamos las motos al total
+        totalMotos += cant;
+
+        // Validamos si la palabra "VACIO" o "VACÍO" está dentro del campo 'orden'
+        if (prod.orden && (prod.orden.toUpperCase().includes('VACIO') || prod.orden.toUpperCase().includes('VACÍO'))) {
+          contenedoresVacios++;
+        }
+      });
+
+      // 3. Inyectamos los números en el HTML
+      document.getElementById('stat-motos').innerText = totalMotos;
+      document.getElementById('stat-vacios').innerText = contenedoresVacios;
+      document.getElementById('stat-movimientos').innerText = movimientos.length;
+    }
+
+    // Ejecutamos la función de estadísticas sin bloquear el modo oscuro
+    document.addEventListener('DOMContentLoaded', cargarEstadisticas);
+  </script>
+
+  <!-- Enlazamos el app.js para que funcione el botón de Modo Oscuro -->
+  <script src="app.js"></script>
+
+</body>
+</html>
