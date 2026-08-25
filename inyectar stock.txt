@@ -1,0 +1,30 @@
+
+let stockActual = JSON.parse(localStorage.getItem('deposito_gilera_data')) || [];
+
+// 2. Creamos 50 registros falsos automáticamente
+for(let i = 1; i <= 50; i++) {
+  stockActual.push({
+    orden: "TEST-" + (1000 + i),
+    factura: "9999" + i,
+    contenedor: "MSCU" + Math.floor(100000 + Math.random() * 900000),
+    cantidad_ikd: Math.floor(Math.random() * 100) + 10,
+    modelo: i % 2 === 0 ? "Smash 110" : "Sahel 150",
+    bl_no: "MAEU" + Math.floor(100000 + Math.random() * 900000),
+    buque: "Express Star",
+    fecha_descarga: "2026-08-24",
+    deposito: "Depósito " + (i % 3 + 1),
+    posicion: "Z-" + i
+  });
+}
+
+// 3. Lo guardamos en la memoria del navegador
+localStorage.setItem('deposito_gilera_data', JSON.stringify(stockActual));
+
+// 4. Recargamos
+location.reload();
+
+-------
+
+
+localStorage.removeItem('deposito_gilera_data');
+location.reload();
