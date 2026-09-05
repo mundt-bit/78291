@@ -68,7 +68,8 @@ function guardarNuevoProducto(e) {
     buque: document.getElementById('buque').value,
     fecha_descarga: document.getElementById('fecha_descarga').value,
     deposito: document.getElementById('deposito').value,
-    posicion: document.getElementById('posicion').value
+    posicion: document.getElementById('posicion').value,
+    comentario: "" // Inicia sin comentario
   };
 
   inventario.push(nuevo);
@@ -87,6 +88,12 @@ function renderizarTabla() {
   tbody.innerHTML = '';
 
   inventario.forEach((prod, index) => {
+    // Lógica visual del globito de comentarios
+    let tieneNota = prod.comentario && prod.comentario.trim() !== "";
+    let icono = tieneNota ? "📌" : "📎";
+    let claseGlobo = tieneNota ? "btn-comentario btn-con-nota" : "btn-comentario";
+    let tituloTooltip = tieneNota ? prod.comentario : "Agregar nota";
+
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td><strong>${prod.orden}</strong></td>
@@ -99,6 +106,9 @@ function renderizarTabla() {
       <td>${prod.fecha_descarga}</td>
       <td>${prod.deposito}</td>
       <td>${prod.posicion}</td>
+      <td style="text-align: center;">
+        <button class="${claseGlobo}" title="${tituloTooltip}" onclick="abrirModalComentario(${index})">${icono}</button>
+      </td>
       <td>
         <button class="btn-edit" onclick="prepararEdicion(${index})" title="Editar">✏️</button>
         <button style="background-color: #10b981; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-weight: 600; margin: 0 4px;" onclick="registrarEgreso(${index})" title="Restar Stock">📤</button>
@@ -134,6 +144,8 @@ function prepararEdicion(index) {
 function actualizarProducto(e) {
   e.preventDefault();
   const index = document.getElementById('edit-index').value;
+  // Guardamos el comentario viejo para no perderlo al editar
+  const comentarioExistente = inventario[index].comentario || "";
 
   inventario[index] = {
     orden: document.getElementById('edit-orden').value,
@@ -145,7 +157,8 @@ function actualizarProducto(e) {
     buque: document.getElementById('edit-buque').value,
     fecha_descarga: document.getElementById('edit-fecha_descarga').value,
     deposito: document.getElementById('edit-deposito').value,
-    posicion: document.getElementById('edit-posicion').value
+    posicion: document.getElementById('edit-posicion').value,
+    comentario: comentarioExistente
   };
 
   guardarEnLocalStorage();
@@ -293,4 +306,41 @@ function toggleModoOscuro() {
   
   const btn = document.getElementById('btn-modo-oscuro');
   if(btn) btn.innerText = esOscuro ? '☀️ Claro' : '🌙 Oscuro';
+}
+
+
+// ==========================================
+// 6. FUNCIONES DE COMENTARIOS / NOTAS
+// ==========================================
+
+let indiceComentarioActual = -1;
+
+function abrirModalComentario(index) {
+  const prod = inventario[index];
+  indiceComentarioActual = index;
+  
+  // Cambia el título para saber a qué orden pertenece
+  document.getElementById('modal-titulo').innerText = "Nota - Orden: " + prod.orden;
+  // Carga el comentario guardado o deja en blanco
+  document.getElementById('texto-comentario').value = prod.comentario || ""; 
+  
+  // Muestra el modal
+  document.getElementById('modal-comentario').style.display = 'flex';
+}
+
+function cerrarModalComentario() {
+  document.getElementById('modal-comentario').style.display = 'none';
+}
+
+function guardarComentario() {
+  const nuevoComentario = document.getElementById('texto-comentario').value;
+  
+  // Guardamos la nota en el producto y actualizamos el localStorage
+  inventario[indiceComentarioActual].comentario = nuevoComentario;
+  guardarEnLocalStorage();
+  
+  cerrarModalComentario();
+  
+  // Volvemos a renderizar la tabla para que cambie el ícono del globito
+  renderizarTabla(); 
 }
