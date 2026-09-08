@@ -117,6 +117,8 @@ function renderizarTabla() {
     `;
     tbody.appendChild(fila);
   });
+  // Obliga a re-aplicar el filtro de búsqueda si había texto escrito. 
+  filtrarTabla();
 }
 
 // Preparar el formulario de edición (en stock.html)
@@ -162,7 +164,7 @@ function actualizarProducto(e) {
   };
 
   guardarEnLocalStorage();
-  renderizarTabla();
+  renderizarTabla();  
   ocultarEdicion();
 }
 
@@ -341,6 +343,6 @@ function guardarComentario() {
   
   cerrarModalComentario();
   
-  // Volvemos a renderizar la tabla para que cambie el ícono del globito
+  // Volvemos a renderizar la tabla para que cambie el ícono
   renderizarTabla(); 
 }
