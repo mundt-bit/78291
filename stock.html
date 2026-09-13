@@ -91,6 +91,8 @@
       nav a { flex: 1; } 
       .card { padding: 1rem; margin-top: 1rem; }
       main { margin: 1rem auto; }
+      .search-bar { flex-direction: column; }
+      .search-bar input, .search-bar button { width: 100%; margin-bottom: 5px; }
     }
 
     /* REGLAS DEL MODO OSCURO */
@@ -158,8 +160,17 @@
     <section id="sec-inventario" class="card">
       <h2 class="section-title">Inventario Registrado (Stock Actual)</h2>
       
-      <div class="search-bar">
-        <input type="text" id="input-busqueda" onkeyup="filtrarTabla()" placeholder="🔍 Buscar por Orden, Factura, Contenedor, B/L, Modelo, Depósito...">
+      <div class="search-bar" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" id="input-busqueda" onkeyup="filtrarTabla()" placeholder="🔍 Buscar por Orden, Factura, Contenedor, B/L, Modelo, Depósito..." style="flex: 1; min-width: 250px;">
+        
+        <button onclick="document.getElementById('file-import').click()" style="background-color: #10b981; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          📥 Importar Excel
+        </button>
+        <button onclick="exportarExcel()" style="background-color: #3b82f6; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          📤 Exportar Excel
+        </button>
+        
+        <input type="file" id="file-import" accept=".xlsx, .xls" style="display: none;" onchange="importarExcel(event)">
       </div>
 
       <div class="table-responsive">
@@ -198,6 +209,8 @@
     </div>
   </div>
 
+  <!-- Librería para leer y exportar Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
