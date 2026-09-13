@@ -94,6 +94,9 @@ function renderizarTabla() {
     let claseGlobo = tieneNota ? "btn-comentario btn-con-nota" : "btn-comentario";
     let tituloTooltip = tieneNota ? prod.comentario : "Agregar nota";
 
+    // ✨ TRUCO SIMPLE: Dar vuelta la fecha en una sola línea
+    let fechaArgentina = prod.fecha_descarga ? prod.fecha_descarga.split('-').reverse().join('/') : "";
+
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td><strong>${prod.orden}</strong></td>
@@ -103,7 +106,7 @@ function renderizarTabla() {
       <td>${prod.modelo}</td>
       <td>${prod.bl_no}</td>
       <td>${prod.buque}</td>
-      <td>${prod.fecha_descarga}</td>
+      <td>${fechaArgentina}</td> <!-- Acá ponemos la fecha ya dada vuelta -->
       <td>${prod.deposito}</td>
       <td>${prod.posicion}</td>
       <td style="text-align: center;">
@@ -117,6 +120,7 @@ function renderizarTabla() {
     `;
     tbody.appendChild(fila);
   });
+  
   // Obliga a re-aplicar el filtro de búsqueda si había texto escrito. 
   filtrarTabla();
 }
@@ -345,4 +349,165 @@ function guardarComentario() {
   
   // Volvemos a renderizar la tabla para que cambie el ícono
   renderizarTabla(); 
+}
+
+// ==========================================
+// 7. FUNCIONES DE EXCEL (IMPORTAR / EXPORTAR)
+// ==========================================
+
+// EXPORTAR: Convierte la tabla en un archivo .xlsx
+function exportarExcel() {
+  if (inventario.length === 0) {
+    alert("El inventario está vacío. No hay nada para exportar.");
+    return;
+  }
+  
+  // Convertimos el array de inventario a formato de hoja de cálculo
+  const hojaDeTrabajo = XLSX.utils.json_to_sheet(inventario);
+  
+  // Creamos un libro de Excel y le agregamos la hoja
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hojaDeTrabajo, "Stock Actual");
+  
+  // Descargamos el archivo
+  XLSX.writeFile(libro, "Stock_Gilera.xlsx");
+}
+
+// IMPORTAR: Lee un archivo .xlsx y lo carga al sistema
+function importarExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    // Leemos el archivo Excel
+    const workbook = XLSX.read(data, { type: 'array' });
+    
+    // Agarramos la primera pestaña (hoja) del Excel
+    const nombrePrimeraHoja = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[nombrePrimeraHoja];
+    
+    // Lo convertimos a formato JSON para que Javascript lo entienda
+    const excelData = XLSX.utils.sheet_to_json(worksheet);
+    
+    if (excelData.length === 0) {
+      alert("❌ El Excel parece estar vacío.");
+      return;
+    }
+
+    // --- TRADUCTOR DE FECHAS DE EXCEL ---
+    function arreglarFecha(valor) {
+      if (!valor) return "";
+      // Si Excel lo manda como número (ej. 45120)
+      if (typeof valor === 'number') {
+        // Fórmula para pasar de fecha Excel a fecha normal
+        const fecha = new Date(Math.round((valor - 25569) * 86400 * 1000));
+        // Ajustamos la zona horaria para que no se atrase un día
+        fecha.setMinutes(fecha.getMinutes() + fecha.getTimezoneOffset());
+        
+        const yyyy = fecha.getFullYear();
+        const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+        const dd = String(fecha.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`; // Formato exacto que necesita la web
+      }
+      // Si ya era un texto, lo deja como está
+      return valor;
+    }
+    // ------------------------------------
+
+    // Mapeamos los datos por si las columnas del Excel están en mayúsculas
+    const nuevosRegistros = excelData.map(fila => ({
+      orden: fila.orden || fila.Orden || "",
+      factura: fila.factura || fila.Factura || "",
+      contenedor: fila.contenedor || fila.Contenedor || "",
+      cantidad_ikd: fila.cantidad_ikd || fila.Cantidad || fila['Cant. IKD'] || 0,
+      modelo: fila.modelo || fila.Modelo || "",
+      bl_no: fila.bl_no || fila['B/L NO.'] || fila.BL || "",
+      buque: fila.buque || fila.Buque || "",
+      
+      // ACÁ APLICAMOS EL TRADUCTOR A LA FECHA:
+      fecha_descarga: arreglarFecha(fila.fecha_descarga || fila['Fecha de Descarga'] || fila.Fecha || ""),
+      
+      deposito: fila.deposito || fila.Deposito || fila.Depósito || "",
+      posicion: fila.posicion || fila.Posicion || fila.Posición || "",
+      comentario: fila.comentario || fila.Notas || fila.Comentario || ""
+    }));
+
+    // Le preguntamos al usuario qué quiere hacer con los datos
+    const reemplazar = confirm("📂 Excel detectado.\n\n¿Querés REEMPLAZAR todo el stock actual con este Excel?\n\n[Aceptar] = Borra lo viejo y deja solo lo del Excel\n[Cancelar] = Suma lo del Excel al stock que ya tenés cargado");
+    
+    if (reemplazar) {
+      inventario = nuevosRegistros;
+    } else {
+      inventario = inventario.concat(nuevosRegistros);
+    }
+
+    guardarEnLocalStorage();
+    renderizarTabla();
+    
+    document.getElementById('file-import').value = "";
+    alert(`✅ ¡Éxito! Se cargaron ${nuevosRegistros.length} contenedores desde el Excel.`);
+  };
+  
+  reader.readAsArrayBuffer(file);
+}
+
+// EXPORTAR HISTORIAL
+function exportarExcelHistorial() {
+  if (movimientos.length === 0) {
+    alert("El historial está vacío. No hay nada para exportar.");
+    return;
+  }
+  
+  const hojaDeTrabajo = XLSX.utils.json_to_sheet(movimientos);
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hojaDeTrabajo, "Historial de Salidas");
+  XLSX.writeFile(libro, "Historial_Gilera.xlsx");
+}
+
+// IMPORTAR HISTORIAL
+function importarExcelHistorial(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const excelData = XLSX.utils.sheet_to_json(worksheet);
+    
+    if (excelData.length === 0) {
+      alert("❌ El Excel parece estar vacío.");
+      return;
+    }
+
+    const nuevosMovimientos = excelData.map(fila => ({
+      fecha: fila.fecha || fila.Fecha || "",
+      modelo: fila.modelo || fila.Modelo || "",
+      orden: fila.orden || fila.Orden || "",
+      factura: fila.factura || fila.Factura || "",
+      cantidad: fila.cantidad || fila.Cantidad || 0,
+      destino: fila.destino || fila.Destino || ""
+    }));
+
+    const reemplazar = confirm("📂 Excel detectado.\n\n¿Querés REEMPLAZAR todo el historial con este Excel?\n\n[Aceptar] = Borra lo viejo y deja solo lo del Excel\n[Cancelar] = Suma lo del Excel al historial actual");
+    
+    if (reemplazar) {
+      movimientos = nuevosMovimientos;
+    } else {
+      movimientos = movimientos.concat(nuevosMovimientos);
+    }
+
+    // Guardamos en la memoria del historial
+    localStorage.setItem('deposito_gilera_movimientos', JSON.stringify(movimientos));
+    renderizarHistorial();
+    
+    document.getElementById('file-import-historial').value = "";
+    alert(`✅ ¡Éxito! Se cargaron ${nuevosMovimientos.length} movimientos desde el Excel.`);
+  };
+  
+  reader.readAsArrayBuffer(file);
 }
