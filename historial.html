@@ -62,6 +62,7 @@
       .search-container { justify-content: stretch; }
       .search-container input { max-width: 100%; }
       .card { padding: 1rem; margin-top: 1rem; }
+      .search-container button { width: 100%; margin-top: 5px; }
     }
     
     /* REGLAS DEL MODO OSCURO (Para todas las páginas) */
@@ -102,8 +103,19 @@
       
       <div class="header-card">
         <h2 class="section-title">Historial de Movimientos</h2>
-        <div class="search-container">
-          <input type="text" id="input-busqueda-historial" placeholder="🔍 Buscar por modelo, orden, fecha..." onkeyup="filtrarHistorial()">
+        
+        <!-- NUEVO CONTENEDOR DE BÚSQUEDA Y BOTONES EXCEL -->
+        <div class="search-container" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+          <input type="text" id="input-busqueda-historial" placeholder="🔍 Buscar por modelo, orden, fecha..." onkeyup="filtrarHistorial()" style="flex: 1; max-width: none;">
+          
+          <button onclick="document.getElementById('file-import-historial').click()" style="background-color: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            📥 Importar
+          </button>
+          <button onclick="exportarExcelHistorial()" style="background-color: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            📤 Exportar
+          </button>
+          
+          <input type="file" id="file-import-historial" accept=".xlsx, .xls" style="display: none;" onchange="importarExcelHistorial(event)">
         </div>
       </div>
 
@@ -126,6 +138,8 @@
     </section>
   </main>
 
+  <!-- Librería para leer y exportar Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
